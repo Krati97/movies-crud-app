@@ -1,22 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
 
 type submitProps = {
-  onSubmit: (
-    movie: { 
-        title: string; 
-        director: string 
-    }) => Promise<void>;
+  onSubmit: (movie: { title: string; director: string }) => Promise<void>;
+
+  initialValues?: {
+    title: string;
+    director: string;
+  };
+
+  buttonText?: string;
 };
 
-export function MovieAdditionForm({ onSubmit }: submitProps) {
-  const [title, setTitle] = useState("");
-  const [director, setDirector] = useState("");
+export function MovieAdditionForm({
+  onSubmit,
+  initialValues,
+  buttonText = "Add Movie",
+}: submitProps) {
+  const [title, setTitle] = useState(initialValues?.title || "");
+  const [director, setDirector] = useState(initialValues?.director || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +33,10 @@ export function MovieAdditionForm({ onSubmit }: submitProps) {
       director,
     });
 
-    setTitle("");
-    setDirector("");
+    if (!initialValues) {
+      setTitle("");
+      setDirector("");
+    }
   };
 
   return (
@@ -44,7 +53,7 @@ export function MovieAdditionForm({ onSubmit }: submitProps) {
         onChange={(e) => setDirector(e.target.value)}
       />
 
-      <Button type="submit">Add Movie</Button>
+      <Button type="submit">{buttonText}</Button>
     </form>
   );
 }

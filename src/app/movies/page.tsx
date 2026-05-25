@@ -6,7 +6,12 @@ import { auth } from "@/services/firebase";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { createMovie, getMovies, deleteMovie } from "@/services/movies";
+import {
+  createMovie,
+  getMovies,
+  deleteMovie,
+  updateMovie,
+} from "@/services/movies";
 import { MovieAdditionForm } from "@/components/MovieAdditionForm";
 
 type Movie = {
@@ -24,6 +29,7 @@ export default function MoviesPage() {
 
     setMovies(data as Movie[]);
   };
+  const [updateMovieId, setUpdateMovieId] = useState<string | null>(null);
 
   const handleCreateMovie = async (movie: {
     title: string;
@@ -40,6 +46,19 @@ export default function MoviesPage() {
     fetchMovies();
   };
 
+  const handleUpdateMovie = async (
+    id: string,
+    movie: {
+      title: string;
+      director: string;
+    },
+  ) => {
+    await updateMovie(id, movie);
+
+    setUpdateMovieId(null);
+
+    fetchMovies();
+  };
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,24 +96,47 @@ export default function MoviesPage() {
       </div>
 
       <div className="space-y-4">
-        <div>aaa</div>
+        <div className="text-xl font-bold">Movies List</div>
         {movies.map((movie) => (
           <div
             key={movie.id}
             className="flex items-center justify-between rounded border p-4"
           >
-            <div>
-              <h2 className="font-bold">{movie.title}</h2>
+            {updateMovieId === movie.id ? (
+              <MovieAdditionForm
+                initialValues={{
+                  title: movie.title,
+                  director: movie.director,
+                }}
+                buttonText="Update Movie"
+                onSubmit={(updateMovieData) =>
+                  handleUpdateMovie(movie.id, updateMovieData)
+                }
+              />
+            ) : (
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-bold">{movie.title}</h2>
 
-              <p>{movie.director}</p>
+                  <p>{movie.director}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setUpdateMovieId(movie.id)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteMovie(movie.id)}
+              >
+                Delete
+              </Button>
             </div>
-
-            <Button
-              variant="destructive"
-              onClick={() => handleDeleteMovie(movie.id)}
-            >
-              Delete
-            </Button>
           </div>
         ))}
       </div>
