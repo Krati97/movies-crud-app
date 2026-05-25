@@ -39,7 +39,6 @@ Users can:
 |---|---|
 | Next.js | Frontend framework |
 | React | UI library |
-| Firebase | Backend services |
 | Firestore | Database |
 | Firebase Authentication | Authentication |
 | shadcn/ui | UI components |
