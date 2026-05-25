@@ -62,12 +62,14 @@ export default function MoviesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push("/login");
-      } else {
+        return;
+      } 
+        await fetchMovies();
         setLoading(false);
-      }
+      
     });
 
     return () => unsubscribe();
