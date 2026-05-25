@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -15,12 +15,15 @@ type submitProps = {
   };
 
   buttonText?: string;
+
+  onCancel?: () => void;
 };
 
 export function MovieAdditionForm({
   onSubmit,
   initialValues,
   buttonText = "Add Movie",
+  onCancel,
 }: submitProps) {
   const [title, setTitle] = useState(initialValues?.title || "");
   const [director, setDirector] = useState(initialValues?.director || "");
@@ -54,6 +57,12 @@ export function MovieAdditionForm({
       />
 
       <Button type="submit">{buttonText}</Button>
+
+      {onCancel && (
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+      )}
     </form>
   );
 }

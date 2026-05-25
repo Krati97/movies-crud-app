@@ -112,6 +112,7 @@ export default function MoviesPage() {
                 onSubmit={(updateMovieData) =>
                   handleUpdateMovie(movie.id, updateMovieData)
                 }
+                onCancel={() => setUpdateMovieId(null)}
               />
             ) : (
               <div className="flex items-center justify-between">
