@@ -1,0 +1,8 @@
+export const DASHED_LINE = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+export const GET_MOVIE = 'Get Movie';
+export const MOVIES = 'Movies';
+export const LOGOUT = 'Logout';
+export const GET_ONE_MOVIE_BY_ID = "Get One Movie by ID";
+export const MOVIES_LIST = "Movies List";
+export const EDIT= "Edit";
+export const DELETE = "Delete";

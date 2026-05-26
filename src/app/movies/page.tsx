@@ -14,6 +14,16 @@ import {
   updateMovie,
 } from "@/services/movies";
 import { MovieAdditionForm } from "@/components/MovieAdditionForm";
+import {
+  DASHED_LINE,
+  GET_MOVIE,
+  GET_ONE_MOVIE_BY_ID,
+  LOGOUT,
+  MOVIES,
+  MOVIES_LIST,
+  EDIT,
+  DELETE,
+} from "../helper";
 
 type Movie = {
   id: string;
@@ -100,25 +110,29 @@ export default function MoviesPage() {
   return (
     <div className="p-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Movies</h1>
+        <h1 className="text-3xl font-bold mb-4">{MOVIES}</h1>
 
-        <Button onClick={handleLogout}>Logout</Button>
+        <Button onClick={handleLogout}>{LOGOUT}</Button>
       </div>
 
       <div className="mb-10 max-w-md">
         <MovieAdditionForm onSubmit={handleCreateMovie} />
       </div>
 
+      <div>{DASHED_LINE}</div>
+
       <div className="space-y-4">
         <div className="mb-10 max-w-md">
-          <h2 className="text-xl font-bold">Get One Movie by ID</h2>
+          <h2 className="text-xl font-bold">{GET_ONE_MOVIE_BY_ID}</h2>
           <input
             className="w-full rounded border p-2"
             placeholder="Enter movie ID"
             value={movieId}
             onChange={(e) => setMovieId(e.target.value)}
           />
-          <Button className="mt-2" onClick={handleFetchOneMovie}>Get Movie</Button>
+          <Button className="mt-2" onClick={handleFetchOneMovie}>
+            {GET_MOVIE}
+          </Button>
 
           {selectedMovie && (
             <div className="mt-4">
@@ -131,8 +145,9 @@ export default function MoviesPage() {
             </div>
           )}
         </div>
+        <div>{DASHED_LINE}</div>
 
-        <div className="text-xl font-bold">Movies List</div>
+        <div className="text-xl font-bold">{MOVIES_LIST}</div>
         {movies.map((movie) => (
           <div
             key={movie.id}
@@ -165,13 +180,13 @@ export default function MoviesPage() {
                 variant="outline"
                 onClick={() => setUpdateMovieId(movie.id)}
               >
-                Edit
+                {EDIT}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleDeleteMovie(movie.id)}
               >
-                Delete
+                {DELETE}
               </Button>
             </div>
           </div>
