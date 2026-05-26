@@ -9,6 +9,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import {
   createMovie,
   getMovies,
+  getOneMovie,
   deleteMovie,
   updateMovie,
 } from "@/services/movies";
@@ -23,13 +24,25 @@ type Movie = {
 export default function MoviesPage() {
   const router = useRouter();
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [updateMovieId, setUpdateMovieId] = useState<string | null>(null);
+  const [movieId, setMovieId] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   const fetchMovies = async () => {
     const data = await getMovies();
 
     setMovies(data as Movie[]);
   };
-  const [updateMovieId, setUpdateMovieId] = useState<string | null>(null);
+
+  const handleFetchOneMovie = async () => {
+    try {
+      const movie = await getOneMovie(movieId);
+      setSelectedMovie(movie as Movie);
+    } catch (err) {
+      setSelectedMovie(null);
+      alert((err as Error).message);
+    }
+  };
 
   const handleCreateMovie = async (movie: {
     title: string;
@@ -66,10 +79,9 @@ export default function MoviesPage() {
       if (!user) {
         router.push("/login");
         return;
-      } 
-        await fetchMovies();
-        setLoading(false);
-      
+      }
+      await fetchMovies();
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -98,6 +110,28 @@ export default function MoviesPage() {
       </div>
 
       <div className="space-y-4">
+        <div className="mb-10 max-w-md">
+          <h2 className="text-xl font-bold">Get One Movie by ID</h2>
+          <input
+            className="w-full rounded border p-2"
+            placeholder="Enter movie ID"
+            value={movieId}
+            onChange={(e) => setMovieId(e.target.value)}
+          />
+          <Button className="mt-2" onClick={handleFetchOneMovie}>Get Movie</Button>
+
+          {selectedMovie && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between rounded border p-4">
+                <div>
+                  <h3 className="text-lg font-bold">{selectedMovie.title}</h3>
+                  <p>{selectedMovie.director}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="text-xl font-bold">Movies List</div>
         {movies.map((movie) => (
           <div

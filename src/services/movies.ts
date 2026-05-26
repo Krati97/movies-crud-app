@@ -7,6 +7,7 @@ import {
   updateDoc,
   collection,
   doc,
+  getDoc,
 } from "firebase/firestore";
 
 const moviesCollection = collection(db, "movies");
@@ -24,6 +25,19 @@ export const getMovies = async () => {
     id: doc.id,
     ...doc.data(),
   }));
+};
+
+export const getOneMovie = async (id: string) => {
+  const docRef = doc(db, "movies", id);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() };
+  } else {
+    throw {
+        message: "Movie with this ID does not exist",
+    };
+  }
 };
 
 export const deleteMovie = async (id: string) => {
