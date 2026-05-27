@@ -6,6 +6,7 @@ import { auth } from "@/services/firebase";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import { Movie } from "@/types/projectTypes";
 import {
   createMovie,
   listenToMoviesCollection,
@@ -26,11 +27,6 @@ import {
   VIEW,
 } from "../helper";
 
-type Movie = {
-  id: string;
-  title: string;
-  director: string;
-};
 
 export default function MoviesPage() {
   const router = useRouter();

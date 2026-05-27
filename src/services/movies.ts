@@ -1,5 +1,5 @@
 import { db } from "./firebase";
-
+import { MovieDoc } from "@/types/projectTypes";
 import {
   addDoc,
   deleteDoc,
@@ -31,8 +31,6 @@ export const getOneMovie = async (id: string) => {
     };
   }
 };
-
-type MovieDoc = { id: string; title: string; director: string };
 
 export const listenToMoviesCollection = (
   onUpdate: (movies: MovieDoc[]) => void,

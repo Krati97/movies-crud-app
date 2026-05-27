@@ -6,18 +6,7 @@ import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
 
-type submitProps = {
-  onSubmit: (movie: { title: string; director: string }) => Promise<void>;
-
-  initialValues?: {
-    title: string;
-    director: string;
-  };
-
-  buttonText?: string;
-
-  onCancel?: () => void;
-};
+import { submitProps } from "@/types/projectTypes";
 
 export function MovieAdditionForm({
   onSubmit,
