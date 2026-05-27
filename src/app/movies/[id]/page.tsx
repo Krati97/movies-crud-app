@@ -5,12 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { listenToMovieDocument } from "@/services/movies";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-type Movie = {
-  id: string;
-  title: string;
-  director: string;
-};
+import { Movie } from "@/types/projectTypes";
 
 export default function MoviePage() {
   const { id } = useParams<{ id: string }>();
