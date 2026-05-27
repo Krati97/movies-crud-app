@@ -2,12 +2,12 @@ import { db } from "./firebase";
 
 import {
   addDoc,
-  getDocs,
   deleteDoc,
   updateDoc,
   collection,
   doc,
   getDoc,
+  onSnapshot,
 } from "firebase/firestore";
 
 const moviesCollection = collection(db, "movies");
@@ -17,14 +17,6 @@ export const createMovie = async (movie: {
   director: string;
 }) => {
   await addDoc(moviesCollection, movie);
-};
-
-export const getMovies = async () => {
-  const snapshot = await getDocs(moviesCollection);
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
 };
 
 export const getOneMovie = async (id: string) => {
@@ -38,6 +30,37 @@ export const getOneMovie = async (id: string) => {
         message: "Movie with this ID does not exist",
     };
   }
+};
+
+type MovieDoc = { id: string; title: string; director: string };
+
+export const listenToMoviesCollection = (
+  onUpdate: (movies: MovieDoc[]) => void,
+) => {
+  return onSnapshot(moviesCollection, (snapshot) => {
+    const movies = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...(docSnap.data() as Omit<MovieDoc, "id">),
+    }));
+
+    onUpdate(movies);
+  });
+};
+
+export const listenToMovieDocument = (
+  id: string,
+  onUpdate: (movie: MovieDoc | null) => void,
+) => {
+// Reference to one document in the "movies" collection with the given id
+  const docRef = doc(db, "movies", id);
+
+  return onSnapshot(docRef, (docSnap) => {
+    onUpdate(
+      docSnap.exists()
+        ? ({ id: docSnap.id, ...docSnap.data() } as MovieDoc)
+        : null,
+    );
+  });
 };
 
 export const deleteMovie = async (id: string) => {

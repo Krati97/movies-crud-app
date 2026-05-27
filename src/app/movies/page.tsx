@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import {
   createMovie,
-  getMovies,
+  listenToMoviesCollection,
   getOneMovie,
   deleteMovie,
   updateMovie,
@@ -23,6 +23,7 @@ import {
   MOVIES_LIST,
   EDIT,
   DELETE,
+  VIEW,
 } from "../helper";
 
 type Movie = {
@@ -37,12 +38,7 @@ export default function MoviesPage() {
   const [updateMovieId, setUpdateMovieId] = useState<string | null>(null);
   const [movieId, setMovieId] = useState("");
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-
-  const fetchMovies = async () => {
-    const data = await getMovies();
-
-    setMovies(data as Movie[]);
-  };
+  const [loading, setLoading] = useState(true);
 
   const handleFetchOneMovie = async () => {
     try {
@@ -59,14 +55,10 @@ export default function MoviesPage() {
     director: string;
   }) => {
     await createMovie(movie);
-
-    fetchMovies();
   };
 
   const handleDeleteMovie = async (id: string) => {
     await deleteMovie(id);
-
-    fetchMovies();
   };
 
   const handleUpdateMovie = async (
@@ -79,22 +71,26 @@ export default function MoviesPage() {
     await updateMovie(id, movie);
 
     setUpdateMovieId(null);
-
-    fetchMovies();
   };
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let unsubscribeMovies: (() => void) | undefined;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         router.push("/login");
         return;
       }
-      await fetchMovies();
-      setLoading(false);
+
+      unsubscribeMovies = listenToMoviesCollection((data) => {
+        setMovies(data as Movie[]);
+        setLoading(false);
+      });
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      unsubscribeMovies?.();
+    };
   }, [router]);
 
   const handleLogout = async () => {
@@ -171,11 +167,19 @@ export default function MoviesPage() {
                   <h2 className="font-bold">{movie.title}</h2>
 
                   <p>{movie.director}</p>
+                  <p>Id: {movie.id}</p>
                 </div>
               </div>
             )}
 
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/movies/${movie.id}`)}
+              >
+                {VIEW}
+              </Button>
+
               <Button
                 variant="outline"
                 onClick={() => setUpdateMovieId(movie.id)}

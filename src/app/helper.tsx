@@ -6,3 +6,4 @@ export const GET_ONE_MOVIE_BY_ID = "Get One Movie by ID";
 export const MOVIES_LIST = "Movies List";
 export const EDIT= "Edit";
 export const DELETE = "Delete";
+export const VIEW = "View";
