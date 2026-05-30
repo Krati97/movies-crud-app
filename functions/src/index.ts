@@ -49,3 +49,27 @@ export const trimMovieData = onDocumentCreated(
     );
   },
 );
+
+export const lowercaseMovieTitle = onDocumentCreated(
+  "movies/{movieId}",
+  async (event) => {
+    const { movieId } = event.params;
+    const snapshot = event.data;
+
+    if (!snapshot) {
+      logger.error(`Document with ID ${movieId} does not exist.`);
+      return;
+    }
+
+    const data = snapshot.data();
+    const title: string = data.title;
+
+    if (typeof title !== "string") {
+      logger.error(`Document with ID ${movieId} has no valid title field.`);
+      return;
+    }
+
+    await snapshot.ref.update({ titleLowercase: title.toLowerCase().trim() });
+    logger.info(`Added titleLowercase field for movie ${movieId}.`);
+  },
+);
