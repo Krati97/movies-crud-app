@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 
 initializeApp();
@@ -73,3 +74,31 @@ export const lowercaseMovieTitle = onDocumentCreated(
     logger.info(`Added titleLowercase field for movie ${movieId}.`);
   },
 );
+
+export const titleUpperCasePublic = onRequest((req, res) => {
+  // URL FOrmat: http://localhost:5001/{PROJECT_ID}/{REGION}/{FUNCTION_NAME}?params
+  // Working URL: http://localhost:5001/fir-project-abbd4/us-central1/titleUpperCasePublic?title=Interstellar
+  const title: string = req.query.title as string;
+
+  if(!title) {
+    res.status(400).json({ error: "Please provide a title in the request body." });
+    return;
+  }
+
+  const dummyMovieForUpperCase = {
+    originalMovieTitle: title,
+    uppercaseMovieTitle: title.toUpperCase(),
+    director: "Christopher Nolan",
+    actor: [{
+      name: 'Matthew McConaughey',
+      age: 53
+    },
+    {
+      name: 'Anne Hathaway',
+      age: 41
+    }]
+  };
+
+  logger.info(`titleUpperCase function called with title: ${title}`);
+  res.status(200).json(dummyMovieForUpperCase);
+})
