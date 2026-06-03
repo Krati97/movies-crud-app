@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { onRequest } from "firebase-functions/v2/https";
+import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 
 initializeApp();
@@ -78,6 +78,8 @@ export const lowercaseMovieTitle = onDocumentCreated(
 export const titleUpperCasePublic = onRequest((req, res) => {
   // URL FOrmat: http://localhost:5001/{PROJECT_ID}/{REGION}/{FUNCTION_NAME}?params
   // Working URL: http://localhost:5001/fir-project-abbd4/us-central1/titleUpperCasePublic?title=Interstellar
+  // Working URL deployed: https://us-central1-fir-project-abbd4.cloudfunctions.net/titleUpperCasePublic?title=Interstellar
+  //its a get call
   const title: string = req.query.title as string;
 
   if(!title) {
@@ -101,4 +103,49 @@ export const titleUpperCasePublic = onRequest((req, res) => {
 
   logger.info(`titleUpperCase function called with title: ${title}`);
   res.status(200).json(dummyMovieForUpperCase);
-})
+});
+
+// Callable function: We can use auth directly in this one.
+// http://localhost:5001/fir-project-abbd4/us-central1/titleUpperCaseWithAllActors
+/*   its a post call, 
+ {
+  "data": {
+    "title": "Interstellar"
+  }
+} 
+*/
+export const titleUpperCaseWithAllActors = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "Only authenticated users can call this function.",
+    );
+  }
+
+  const title = request.data?.title;
+  if (typeof title !== "string" || !title.trim()) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Please pass a non-empty 'title' in callable data.",
+    );
+  }
+
+  const normalizedTitle = title.trim();
+
+  const dummyMovieForUpperCase = {
+    originalMovieTitle: normalizedTitle,
+    uppercaseMovieTitle: normalizedTitle.toUpperCase(),
+    director: "Christopher Nolan",
+    actors: [
+      { name: "Matthew McConaughey", age: 53 },
+      { name: "Anne Hathaway", age: 41 },
+      { name: "Timothee Chalamet", age: 30 },
+    ],
+  };
+
+  logger.info(
+    `titleUpperCaseWithAllActors called by ${request.auth.uid} with title: ${normalizedTitle}`,
+  );
+
+  return dummyMovieForUpperCase;
+});
