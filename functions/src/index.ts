@@ -22,8 +22,10 @@ const trimSringObject = (obj: Record<string, any>) => {
   return trimmedObj;
 };
 
-export const trimMovieData = onDocumentCreated(
-  "movies/{movieId}",
+export const trimMovieData = onDocumentCreated({
+  document: "movies/{movieId}",
+  serviceAccount: `trimmoviedata-sa@fir-project-abbd4.iam.gserviceaccount.com`
+},  
   async (event) => {
 
     const { movieId } = event.params;
@@ -52,7 +54,10 @@ export const trimMovieData = onDocumentCreated(
 );
 
 export const lowercaseMovieTitle = onDocumentCreated(
-  "movies/{movieId}",
+  {
+  document: "movies/{movieId}",
+  serviceAccount: `lcasemovietitle-sa@fir-project-abbd4.iam.gserviceaccount.com`
+},
   async (event) => {
     const { movieId } = event.params;
     const snapshot = event.data;
@@ -75,7 +80,9 @@ export const lowercaseMovieTitle = onDocumentCreated(
   },
 );
 
-export const titleUpperCasePublic = onRequest((req, res) => {
+export const titleUpperCasePublic = onRequest({
+  serviceAccount: `titlepublic-sa@fir-project-abbd4.iam.gserviceaccount.com`
+},(req, res) => {
   // URL FOrmat: http://localhost:5001/{PROJECT_ID}/{REGION}/{FUNCTION_NAME}?params
   // Working URL: http://localhost:5001/fir-project-abbd4/us-central1/titleUpperCasePublic?title=Interstellar
   // Working URL deployed: https://us-central1-fir-project-abbd4.cloudfunctions.net/titleUpperCasePublic?title=Interstellar
@@ -114,7 +121,9 @@ export const titleUpperCasePublic = onRequest((req, res) => {
   }
 } 
 */
-export const titleUpperCaseWithAllActors = onCall(async (request) => {
+export const titleUpperCaseWithAllActors = onCall({
+  serviceAccount: `titleallactors-sa@fir-project-abbd4.iam.gserviceaccount.com`
+},async (request) => {
   if (!request.auth) {
     throw new HttpsError(
       "unauthenticated",
@@ -149,3 +158,60 @@ export const titleUpperCaseWithAllActors = onCall(async (request) => {
 
   return dummyMovieForUpperCase;
 });
+
+export const getAuthViewerInfo = onCall({
+  serviceAccount: `getviewerinfo-sa@fir-project-abbd4.iam.gserviceaccount.com`
+},async (request) => {
+  if (!request.auth) {
+    logger.info("getAuthViewerInfo called without authenticated user.");
+    return {
+      isLoggedIn: false,
+      uid: null,
+      email: null,
+      message: "No user logged in",
+    };
+  }
+
+  const email = typeof request.auth.token.email === "string" ?
+    request.auth.token.email :
+    null;
+  logger.info(`getAuthViewerInfo called by ${request.auth.uid}`);
+  return {
+    isLoggedIn: true,
+    uid: request.auth.uid,
+    email,
+    message: "User is logged in",
+  };
+});
+
+/**
+ * This is just for me to understand: 
+ * request.auth looks like this.
+ * Firebase automatically populates it when we call a callable function with an authenticated user. 
+ * We can see the email and uid of the user in this object.
+ {
+   "uid":"VS0VOk7NWebKXK1z2AKHetA6dHI3",
+   "token":{
+      "iss":"https://securetoken.google.com/fir-project-abbd4",
+      "aud":"fir-project-abbd4",
+      "auth_time":1781018778,
+      "user_id":"VS0VOk7NWebKXK1z2AKHetA6dHI3",
+      "sub":"VS0VOk7NWebKXK1z2AKHetA6dHI3",
+      "iat":1781022571,
+      "exp":1781026171,
+      "email":"kmaheshwari+movies01@agentsonly.com",
+      "email_verified":false,
+      "firebase":{
+         "identities":{
+            "email":[
+               "kmaheshwari+movies01@agentsonly.com"
+            ]
+         },
+         "sign_in_provider":"password"
+      },
+      "uid":"VS0VOk7NWebKXK1z2AKHetA6dHI3"
+   },
+   "rawToken":"eyJhbGciOiJSUzI1NiIsImtpZCI6Ijc5OTRiNGYzMTU2MzJiMjk3NzAwNmQ5M2U5NGIyYWNiZTMwNWZlNDYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZmlyLXByb2plY3QtYWJiZDQiLCJhdWQiOiJmaXItcHJvamVjdC1hYmJkNCIsImF1dGhfdGltZSI6MTc4MTAxODc3OCwidXNlcl9pZCI6IlZTMFZPazdOV2ViS1hLMXoyQUtIZXRBNmRISTMiLCJzdWIiOiJWUzBWT2s3TldlYktYSzF6MkFLSGV0QTZkSEkzIiwiaWF0IjoxNzgxMDIyNTcxLCJleHAiOjE3ODEwMjYxNzEsImVtYWlsIjoia21haGVzaHdhcmkrbW92aWVzMDFAYWdlbnRzb25seS5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsia21haGVzaHdhcmkrbW92aWVzMDFAYWdlbnRzb25seS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.b9QUee6aG7qSl44v_7QJsUqXGZTweFnqaA7o3_JDMxMnDifzKw50xXlFL_jNt2_uMHWRR8UrWlC_gXidrtXe7QWzWwnytLIxECHkcxPLTM_beZZP8nX7br7t69Fp5g7ZqzeIogRd88gNmMh7XTQMsBSR9E_kaOUtfRUZML9Zr48xYEDmbFGaH_GRiFz2DWrvOhX_xzlJj-2iALogY5mgxEiMCLErc5wkuyGtbH9izWXJ6n6zmB7TqxGn5QsruEBIG-9KU3GZvRz-QN61U7ZYNGy_MOM7iMQ6Bg_WlrdWnWsH0jQJ2LiSueHif_cVytnGUII5yAOjn2SXq9YFOuji0w"
+}
+
+ */
