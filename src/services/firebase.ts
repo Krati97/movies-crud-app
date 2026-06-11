@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -16,9 +17,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const functions = getFunctions(app);
 
 if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true") {
   connectFirestoreEmulator(db, "localhost", 8080);
+  connectFunctionsEmulator(functions, "localhost", 5001);
   console.log("Connected to Firestore Emulator");
 } else {
   console.log("Connected to Firebase Firestore");

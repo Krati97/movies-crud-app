@@ -46,3 +46,10 @@ export type submitProps = {
 
   onCancel?: () => void;
 };
+
+export type AuthViewerInfo = {
+  isLoggedIn: boolean;
+  uid: string | null;
+  email: string | null;
+  message: string;
+};

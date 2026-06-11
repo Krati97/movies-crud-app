@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { logout } from "@/services/auth";
 import { auth } from "@/services/firebase";
+import { getAuthViewerInfo } from "@/services/callable";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
@@ -34,7 +35,23 @@ export default function MoviesPage() {
   const [updateMovieId, setUpdateMovieId] = useState<string | null>(null);
   const [movieId, setMovieId] = useState("");
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [viewerUid, setViewerUid] = useState<string | null>(null);
+  const [viewerEmail, setViewerEmail] = useState<string | null>(null);
+  const [viewerMessage, setViewerMessage] = useState("Loading user info...");
   const [loading, setLoading] = useState(true);
+
+  const refreshViewerInfo = async () => {
+    try {
+      const info = await getAuthViewerInfo();
+      setViewerUid(info.uid);
+      setViewerEmail(info.email);
+      setViewerMessage(info.message);
+    } catch {
+      setViewerUid(null);
+      setViewerEmail(null);
+      setViewerMessage("Unable to load auth info");
+    }
+  };
 
   const handleFetchOneMovie = async () => {
     try {
@@ -76,6 +93,8 @@ export default function MoviesPage() {
         router.push("/login");
         return;
       }
+      // I trigger this callable to get the viewer information. 
+      void refreshViewerInfo();
 
       unsubscribeMovies = listenToMoviesCollection((data) => {
         setMovies(data as Movie[]);
@@ -104,7 +123,15 @@ export default function MoviesPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold mb-4">{MOVIES}</h1>
 
-        <Button onClick={handleLogout}>{LOGOUT}</Button>
+        <div className="text-right">
+          <p className="text-sm font-medium">
+            {viewerEmail ? `Email: ${viewerEmail}` : viewerMessage}
+          </p>
+          <p className="text-xs text-muted-foreground mb-2">
+            {viewerUid ? `UID: ${viewerUid}` : ""}
+          </p>
+          <Button onClick={handleLogout}>{LOGOUT}</Button>
+        </div>
       </div>
 
       <div className="mb-10 max-w-md">
